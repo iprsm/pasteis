@@ -3,124 +3,335 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pedidos de Pastéis</title>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <title>Samba e Pastel - Pedido Online</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #fafafa; padding: 20px; text-align: center; }
-    .container { max-width: 500px; margin: auto; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);}
-    input, button { margin: 8px 0; padding: 10px; width: 100%; border-radius: 8px; border: 1px solid #ccc; }
-    button { background: #28a745; color: white; font-weight: bold; cursor: pointer; }
-    button:hover { background: #218838; }
-    #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); }
-    #modal-content { background: #fff; margin: 10% auto; padding: 20px; width: 90%; max-width: 500px; border-radius: 10px; text-align: center; }
+    :root {
+      --primary: #ffffff;
+      --primary-dark: #e69e00;
+      --accent: #ff5722;
+      --bg: #fafafa;
+      --text: #333;
+    }
+    body {
+      font-family: "Segoe UI", Roboto, Arial, sans-serif;
+      background: var(--bg);
+      margin: 0;
+      padding: 0;
+      text-align: center;
+      color: var(--text);
+    }
+    header {
+      background: var(--primary);
+      padding: 20px 10px;
+      color: #888888;
+      box-shadow: 0 3px 2px rgba(0,0,0,0.2);
+    }
+    header img {
+      max-height: 200px;
+      width: auto;
+      margin-bottom: 0px;
+    }
+    header h1 {
+      margin: 5px 0;
+      font-size: 1.8rem;
+      font-weight: 700;
+    }
+    header p {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 400;
+    }
+    form {
+      background: #fff;
+      width: 92%;
+      max-width: 480px;
+      margin: 20px auto;
+      padding: 25px 20px;
+      border-radius: 16px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+      text-align: left;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: var(--primary-dark);
+      font-size: 1.4rem;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    input[type="text"], input[type="number"], textarea {
+      width: 100%;
+      padding: 12px;
+      margin-top: 5px;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      font-size: 1rem;
+      transition: border 0.2s;
+    }
+    input:focus, textarea:focus {
+      outline: none;
+      border: 1px solid var(--primary);
+      box-shadow: 0 0 0 2px rgba(255,179,0,0.25);
+    }
+    .sabores {
+      margin-top: 10px;
+      font-size: 1rem;
+      line-height: 2rem;
+    }
+    button {
+      margin-top: 25px;
+      padding: 14px;
+      width: 100%;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(255,87,34,0.25);
+      transition: all 0.3s ease;
+    }
+    button:hover {
+      background: #e64a19;
+      transform: translateY(-2px);
+    }
+
+    /* === MODAL === */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255,255,255,0.97);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+
+      background-image: url('/home/nelson/Downloads/iprsmlogotransparente.png');
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: 45%;
+      opacity: 0.98;
+    }
+    .modal-content {
+      background: rgba(255,255,255,0.95);
+      padding: 25px;
+      border-radius: 18px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+      position: relative;
+      z-index: 1001;
+      width: 92%;
+      max-width: 500px;
+      max-height: 90%;
+      overflow-y: auto;
+      text-align: center;
+      animation: fadeInUp 0.3s ease;
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .close {
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      font-size: 26px;
+      font-weight: bold;
+      cursor: pointer;
+      color: var(--accent);
+    }
+    .close:hover {
+      color: #c62828;
+    }
+    #qrcode {
+      margin-top: 15px;
+      max-width: 200px;
+      width: 100%;
+      height: auto;
+    }
+    textarea {
+      font-size: 0.9rem;
+      border-radius: 10px;
+    }
+
+    @media (max-width: 768px) {
+      header img { max-height: 80px; }
+      header h1 { font-size: 1.5rem; }
+      form { padding: 18px; }
+      button { font-size: 1rem; }
+    }
+    @media (max-width: 480px) {
+      header img { max-height: 65px; }
+      header h1 { font-size: 1.3rem; }
+      form { width: 94%; padding: 16px; }
+      .modal-content { width: 95%; padding: 18px; }
+      button { font-size: 1rem; padding: 12px; }
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <img src="iprsmlogo.jpg" alt="Logo" width="120">
-    <h2>Monte seu Pedido de Pastéis</h2>
-    <input type="text" id="nome" placeholder="Seu nome">
+  <header>
+    <img src="/home/nelson/Downloads/iprsmlogotransparente.png" alt="Logo">
+    <h1>Samba e Pastel</h1>
+    <p>Monte seu pedido e pague via Pix!</p>
+  </header>
 
-    <label>Sabores (separe por vírgula e quantidade ex: carne=2, queijo=3)</label>
-    <input type="text" id="sabores" placeholder="Digite os sabores e quantidades">
+  <form id="pedidoForm">
+    <h2>Monte seu Pedido</h2>
 
-    <button onclick="gerarPedido()">Gerar Pedido</button>
-  </div>
+    <label for="nome">Seu Nome:</label>
+    <input type="text" id="nome" required placeholder="Digite seu nome">
+
+    <label>Escolha os sabores:</label>
+    <div class="sabores">
+      <input type="number" min="0" value="0" id="carne"> Carne<br>
+      <input type="number" min="0" value="0" id="pizza"> Pizza<br>
+      <input type="number" min="0" value="0" id="bauru"> Bauru<br>
+      <input type="number" min="0" value="0" id="queijo"> Queijo<br>
+      <input type="number" min="0" value="0" id="frango"> Frango c/ Catupiry<br>
+      <input type="number" min="0" value="0" id="calabresa"> Calabresa<br>
+    </div>
+
+    <button type="submit">Gerar Pedido</button>
+  </form>
 
   <!-- Modal -->
-  <div id="modal">
-    <div id="modal-content">
-      <h3>Resumo do Pedido</h3>
-      <p id="resumo"></p>
-      <canvas id="qrcode"></canvas>
-      <p><strong>Pix Copia e Cola:</strong></p>
-      <textarea id="pixCode" rows="4" style="width:100%;"></textarea>
-      <br><br>
-      <button onclick="fecharModal()">Fechar</button>
+  <div id="pedidoModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="fecharModal()">&times;</span>
+      <h2>Pedido Gerado!</h2>
+      <p><strong>Nome:</strong> <span id="resNome"></span></p>
+      <p><strong>Sabores:</strong> <span id="resSabores"></span></p>
+      <p><strong>Hash do Pedido:</strong> <span id="resHash"></span></p>
+      <p><strong>Valor:</strong> R$ <span id="resValor"></span></p>
+
+      <h3 style="color:var(--primary-dark);margin-top:20px;">Pagamento via PIX</h3>
+      <p><b>Chave Pix:</b> 11979654420</p>
+      <p><b>Código Copia e Cola:</b></p>
+      <textarea id="pixCode" readonly></textarea>
+      <button onclick="copiarPix()">📋 Copiar Código Pix</button>
+
+      <div>
+        <canvas id="qrcode"></canvas>
+      </div>
+
+      <button style="margin-top:20px;background:var(--primary);" onclick="fecharModal()">Fechar Pedido</button>
     </div>
   </div>
 
-<script>
-const chavePix = "11979654420"; // sua chave Pix
-const scriptURL = "COLE_AQUI_A_URL_DO_SEU_WEBAPP"; // URL do Apps Script
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+  <script>
+    function gerarPix(chave, valor, nome, cidade, txid) {
+      function montaCampo(id, valor) {
+        let tamanho = valor.length.toString().padStart(2, "0");
+        return id + tamanho + valor;
+      }
 
-function gerarPedido() {
-  const nome = document.getElementById("nome").value.trim();
-  const saboresInput = document.getElementById("sabores").value.trim();
+      let valorFormatado = valor.toFixed(2);
 
-  if (!nome || !saboresInput) {
-    alert("Preencha seu nome e os sabores.");
-    return;
-  }
+      let payload =
+        montaCampo("00", "01") +
+        montaCampo("01", "11") +
+        montaCampo("26",
+          montaCampo("00", "BR.GOV.BCB.PIX") +
+          montaCampo("01", chave)
+        ) +
+        montaCampo("52", "0000") +
+        montaCampo("53", "986") +
+        montaCampo("54", valorFormatado) +
+        montaCampo("58", "BR") +
+        montaCampo("59", nome.substring(0,25)) +
+        montaCampo("60", cidade.substring(0,15)) +
+        montaCampo("62", montaCampo("05", txid));
 
-  let totalPastel = 0;
-  let listaSabores = [];
+      payload += "6304";
 
-  saboresInput.split(",").forEach(item => {
-    const [sabor, qtd] = item.split("=");
-    const quantidade = parseInt(qtd) || 1;
-    listaSabores.push(`${sabor.trim()} (${quantidade})`);
-    totalPastel += quantidade;
-  });
+      function crc16(str) {
+        let crc = 0xFFFF;
+        for (let i = 0; i < str.length; i++) {
+          crc ^= str.charCodeAt(i) << 8;
+          for (let j = 0; j < 8; j++) {
+            if ((crc & 0x8000) !== 0) {
+              crc = (crc << 1) ^ 0x1021;
+            } else {
+              crc = crc << 1;
+            }
+            crc &= 0xFFFF;
+          }
+        }
+        return crc.toString(16).toUpperCase().padStart(4, "0");
+      }
 
-  // cálculo do preço
-  let valorTotal = 0;
-  if (totalPastel >= 5) {
-    const combos = Math.floor(totalPastel / 5);
-    const resto = totalPastel % 5;
-    valorTotal = combos * 50 + resto * 12;
-  } else {
-    valorTotal = totalPastel * 12;
-  }
+      return payload + crc16(payload);
+    }
 
-  // gera hash
-  const hash = Math.random().toString(36).substring(2, 10).toUpperCase();
+    const form = document.getElementById("pedidoForm");
+    const modal = document.getElementById("pedidoModal");
 
-  // monta código Pix simples
-  const pixCopiaCola = `00020126360014BR.GOV.BCB.PIX0114${chavePix}520400005303986540${valorTotal.toFixed(2)}5802BR5913Pastelaria6009SaoPaulo62070503***6304ABCD`;
+    form.addEventListener("submit", function(e) {
+      e.preventDefault();
 
-  // exibir modal
-  document.getElementById("resumo").innerText = 
-    `Nome: ${nome}\nSabores: ${listaSabores.join(", ")}\nQtd: ${totalPastel}\nValor: R$ ${valorTotal.toFixed(2)}\nCódigo: ${hash}`;
+      const nome = document.getElementById("nome").value;
+      const sabores = [];
+      let totalPastel = 0;
 
-  document.getElementById("pixCode").value = pixCopiaCola;
+      ["carne","pizza","bauru","queijo","frango","calabresa"].forEach(id=>{
+        let qtd = parseInt(document.getElementById(id).value);
+        if(qtd>0){
+          sabores.push(`${id} (${qtd})`);
+          totalPastel += qtd;
+        }
+      });
 
-  QRCode.toCanvas(document.getElementById("qrcode"), pixCopiaCola, function (error) {
-    if (error) console.error(error);
-  });
+      if(totalPastel === 0){
+        alert("Você deve escolher pelo menos 1 pastel.");
+        return;
+      }
 
-  document.getElementById("modal").style.display = "block";
+      let valor = (totalPastel === 5) ? 50 : totalPastel * 12;
+      const hash = btoa(nome + Date.now() + Math.random()).substring(0,12);
 
-  // envia para planilha
-  enviarParaPlanilha(nome, hash, listaSabores.join(", "), totalPastel, valorTotal, pixCopiaCola);
-}
+      document.getElementById("resNome").textContent = nome;
+      document.getElementById("resSabores").textContent = sabores.join(", ");
+      document.getElementById("resHash").textContent = hash;
+      document.getElementById("resValor").textContent = valor;
 
-function fecharModal() {
-  document.getElementById("modal").style.display = "none";
-}
+      const chavePix = "11979654420";
+      const pixCopiaCola = gerarPix(chavePix, valor, "Samba e Pastel", "SAOPAULO", hash);
+      document.getElementById("pixCode").value = pixCopiaCola;
 
-function enviarParaPlanilha(nome, hash, sabores, totalPastel, valor, pixCopiaCola) {
-  const data = {
-    nome: nome,
-    hash: hash,
-    sabores: sabores,
-    totalPastel: totalPastel,
-    valor: valor,
-    pix: pixCopiaCola
-  };
+      new QRious({
+        element: document.getElementById("qrcode"),
+        value: pixCopiaCola,
+        size: 200
+      });
 
-  fetch(scriptURL, {
-    method: "POST",
-    mode: "no-cors",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data)
-  }).then(() => {
-    console.log("✅ Pedido enviado para planilha");
-  }).catch(err => {
-    console.error("❌ Erro ao enviar:", err);
-  });
-}
-</script>
+      modal.style.display = "flex";
+    });
+
+    function fecharModal() {
+      modal.style.display = "none";
+    }
+
+    function copiarPix() {
+      const pixCode = document.getElementById("pixCode");
+      pixCode.select();
+      pixCode.setSelectionRange(0, 99999);
+      navigator.clipboard.writeText(pixCode.value)
+        .then(() => alert("Código Pix copiado!"))
+        .catch(() => alert("Erro ao copiar o código Pix."));
+    }
+
+    window.onclick = function(e) {
+      if (e.target === modal) fecharModal();
+    }
+  </script>
 </body>
 </html>
-
